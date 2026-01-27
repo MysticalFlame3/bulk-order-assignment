@@ -11,11 +11,18 @@ include_once 'utils/Response.php';
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode( '/', $uri );
 
-if (isset($uri[2]) && $uri[2] === 'api') {
-    $resource = isset($uri[3]) ? $uri[3] : null;
-    $action = isset($uri[4]) ? $uri[4] : null; 
+$apiIndex = false;
+if (isset($uri[1]) && $uri[1] === 'api') {
+    $apiIndex = 1;
+} elseif (isset($uri[2]) && $uri[2] === 'api') {
+    $apiIndex = 2; 
+}
 
-    
+if ($apiIndex !== false) {
+    $resource = isset($uri[$apiIndex + 1]) ? $uri[$apiIndex + 1] : null;
+    $action = isset($uri[$apiIndex + 2]) ? $uri[$apiIndex + 2] : null; 
+    $param = isset($uri[$apiIndex + 3]) ? $uri[$apiIndex + 3] : null;
+
     try {
         if ($resource === 'orders' && $action === 'unassigned') {
             include_once 'controllers/OrdersController.php';
@@ -32,10 +39,10 @@ if (isset($uri[2]) && $uri[2] === 'api') {
             $controller = new AssignmentsController();
             $controller->triggerBulkAssignment();
         }
-        elseif ($resource === 'assignments' && $action === 'jobs' && isset($uri[5])) {
+        elseif ($resource === 'assignments' && $action === 'jobs' && $param) {
             include_once 'controllers/AssignmentsController.php';
             $controller = new AssignmentsController();
-            $controller->getJobStatus($uri[5]);
+            $controller->getJobStatus($param);
         }
         else {
             Response::send(404, ["message" => "Endpoint not found"]);

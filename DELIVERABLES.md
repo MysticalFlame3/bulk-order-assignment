@@ -102,7 +102,6 @@ public function runJob($jobId, $batchSize, $date) {
         while (true) {
             $this->conn->beginTransaction();
 
-            // 1. Fetch Batch safely
             $sql = "SELECT * FROM orders 
                     WHERE status IN ('NEW', 'UNASSIGNED') 
                     ORDER BY order_date ASC 
@@ -116,15 +115,13 @@ public function runJob($jobId, $batchSize, $date) {
 
             if (empty($orders)) {
                 $this->conn->commit();
-                break; // No more orders
+                break; 
             }
 
-            // 2. Mark as Processing
             $orderIds = array_column($orders, 'order_id');
             $idList = implode(',', $orderIds);
             $this->conn->exec("UPDATE orders SET status = 'PROCESSING' WHERE order_id IN ($idList)");
 
-            // 3. Process each order
             foreach ($orders as $order) {
                 try {
                     $courierId = $this->findBestCourier($order, $date);
@@ -145,7 +142,6 @@ public function runJob($jobId, $batchSize, $date) {
         if ($this->conn->inTransaction()) {
             $this->conn->rollBack();
         }
-        // Handle critical job failure...
     }
 }
 ```
