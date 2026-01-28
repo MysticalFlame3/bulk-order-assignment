@@ -42,6 +42,10 @@ foreach ($failures as $fail) {
 
     if ($success) {
         echo "Order $orderId: Success.\n";
+
+        $jobId = $fail['job_id'];
+        $updJob = $db->prepare("UPDATE assignment_jobs SET total_assigned = total_assigned + 1, total_failed = total_failed - 1 WHERE job_id = :jid");
+        $updJob->execute([':jid' => $jobId]);
     } else {
         $newCount = $fail['retry_count'] + 1;
         $minutes = ($newCount == 1) ? 5 : 15;

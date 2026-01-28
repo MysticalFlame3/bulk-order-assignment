@@ -28,8 +28,13 @@ class AssignmentsController {
 
         $jobId = $this->assignmentRepo->createJob($batchSize, $strategy);
 
-        $cmd = "start /B php " . __DIR__ . "/../cron/run_job.php --job_id=$jobId --batch_size=$batchSize --date=$date";
-        pclose(popen($cmd, "r"));
+        $scriptPath = __DIR__ . '/../cron/run_job.php';
+        $scriptPath = str_replace('/', DIRECTORY_SEPARATOR, $scriptPath);
+        $phpBinary = PHP_BINARY;
+        
+        $cmd = "start \"BackgroundJob\" /B \"$phpBinary\" \"$scriptPath\" --job_id=$jobId --batch_size=$batchSize --date=$date > debug_job.log 2>&1";
+        
+        exec($cmd);
 
 
         Response::send(200, [

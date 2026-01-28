@@ -70,6 +70,7 @@ class AssignmentService {
             $this->assignmentRepo->updateJob($jobId, 'COMPLETED', $totalOrders, $totalAssigned, $totalFailed);
 
         } catch (Exception $e) {
+            echo "CRITICAL ERROR: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
             if ($this->conn->inTransaction()) {
                 $this->conn->rollBack();
             }
